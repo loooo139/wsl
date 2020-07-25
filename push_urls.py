@@ -58,5 +58,5 @@ result = []
 import redis
 r=redis.StrictRedis(host='tencent.latiaohaochi.cn',port=6379,password='6063268abc',db=0)
 for url in url_list:
-    r.rpush('urls','\t'.join(url_list))
-print(r.llen('urls'))
+    r.rpush('urls','\t'.join(url))
+    print(r.llen('urls'))
