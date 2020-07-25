@@ -35,7 +35,8 @@ res = open('./dis_res.csv', 'a', encoding='utf8')
 while r.llen('urls')!=0:
     time.sleep(5)
     print('remain task', r.llen('urls'))
-    line =r.lindex('urls',0).split('\t')
+    print(r.lindex('urls',0))
+    line =r.lindex('urls',0).decode('utf8').split('\t')
     r.lpop('urls')
     name, start_date, end_date = line[0], line[1], line[2]
     try:
