@@ -4,10 +4,10 @@
 
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
-@LastEditTime: 2020-07-25 12:05:19
+@LastEditTime: 2020-07-28 23:27:05
 @LastEditors: lixf
 @Description: 
-@FilePath: \wsl_py\crawler.py
+@FilePath: \wsl\crawler.py
 @越码越快乐
 '''
 import threading, queue
@@ -17,20 +17,24 @@ from datetime import timedelta
 import time
 import redis
 import pymysql
+import sys
 options = webdriver.ChromeOptions()
 # 设置中文
 #options.add_argument('--ignore-certificate-errors')
 from selenium.webdriver.chrome.options import Options
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--headless')
+# options.add_argument('--headless')
 # 更换头部
 options.add_argument(
     'user-agent="Mozilla/5.0 (iPod; U; CPU iPhone OS 2_1 like Mac OS X; ja-jp) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5F137 Safari/525.20"'
 )
 #options.add_argument("--proxy-server=socks5://127.0.0.1:10808")
 driver = webdriver.Chrome(options=options)  # 打开 Chrome 浏览器
-r=redis.StrictRedis(host='tencent.latiaohaochi.cn',port=6379,password='6063268abc',db=0)
+r = redis.StrictRedis(host='tencent.latiaohaochi.cn',
+                      port=6379,
+                      password='6063268abc',
+                      db=0)
 res = open('./dis_res.csv', 'a', encoding='utf8')
 # driver.implicitly_wait(0.5)
 #len_res=0
@@ -38,24 +42,23 @@ full_res = 0
 driver.implicitly_wait(10)
 # driver.set_page_load_timeout(10)
 mysql = pymysql.connect(host='tencent.latiaohaochi.cn',
-                                user='root',
-                                                        password='6063268abc',
-                                                                                db='crawler')
+                        user='root',
+                        password='6063268abc',
+                        db='crawler')
 cursor = mysql.cursor()
 sql = 'insert into wsl_news(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url) values("{}","{}","{}","{}","{}","{}","{}","{}","{}")'
 
-while r.scard('urls')!=0:
-#    time.sleep(5)
+while r.scard('urls') != 0:
+    #    time.sleep(5)
     print('remain task')
     print(r.scard('urls'))
-    line =r.spop('urls').decode('utf8').split('\t')
-#    r.lpop('urls')
+    line = r.spop('urls').decode('utf8').split('\t')
+    #    r.lpop('urls')
     name, start_date, end_date = line[0], line[1], line[2]
     try:
-
-        driver.get(
-            "https://www.wsj.com/search/term.html?KEYWORDS={name}&min-date={start_date}&max-date={end_date}&isAdvanced=true&daysback=90d&andor=AND&sort=date-desc&source=wsjarticle"
-            .format(name=name, start_date=start_date, end_date=end_date))
+        single_url = "https://www.wsj.com/search/term.html?KEYWORDS={name}&min-date={start_date}&max-date={end_date}&isAdvanced=true&daysback=90d&andor=AND&sort=date-desc&source=wsjarticle".format(
+            name=name, start_date=start_date, end_date=end_date)
+        driver.get(single_url)
         # WebDriverWait(driver, 10).until(
         #     EC.presence_of_element_located(
         #         (By.XPATH, "//div[@class='headline-container']")))
@@ -66,8 +69,10 @@ while r.scard('urls')!=0:
                 driver.find_elements_by_css_selector(
                     'li[class="results-count"]')[0].text.split()[-1])
         except Exception as e:
-            r.sadd('urls',line)
-            print('something wrong ', e, e.args,sys.exc_info())
+            r.sadd('urls', '\t'.join(line))
+            print('find no news on this page,put it back to db', e, e.args,
+                  sys.exc_info())
+            print(single_url)
             continue
         for i in range(int(len_res / 20) + 1):
             print("full len  page is {0},cur is {1}".format(
@@ -84,11 +89,11 @@ while r.scard('urls')!=0:
                         '//li[@class="results-count"]').text.split()[-1])
                 print('click next page finish,cur_lenth is %d', cur_res)
                 if cur_res != len_res:
-                    r.radd('urls','\t'.join(line))
+                    r.radd('urls', '\t'.join(line))
                     continue
             print("find " + str(len(news)) + " news")
             if len(news) == 0:
-                r.sadd('urls','\t'.join(line))
+                r.sadd('urls', '\t'.join(line))
                 continue
             for k, i in enumerate(news):
                 print(k + 1)
@@ -112,11 +117,11 @@ while r.scard('urls')!=0:
                         'h3 > a')[0].get_attribute('href')
                     single_res = '\t'.join([
                         name, start_date, end_date, tag, title, author, date,
-                        absrtact,news_url
+                        absrtact, news_url
                     ])
                     res.write(single_res + '\n')
                     print(single_res)
-                    if r.sadd('news',single_res)==0:
+                    if r.sadd('news', single_res) == 0:
                         print('duplicate news')
                         continue
                     try:
@@ -131,7 +136,7 @@ while r.scard('urls')!=0:
                         print(news_sql)
                         print('insert to db failed')
                 except Exception as e:
-                    print('exception',e)
+                    print('exception', e)
                     single_res = '\t'.join(
                         [name, start_date, end_date, i.text])
                     res.write(single_res + '\n')
@@ -140,9 +145,8 @@ while r.scard('urls')!=0:
 
         # res.write(i.text)
     except Exception as e:
-        print('something wrong ',e,e.args)
-        r.sadd('urls','\t'.join(line))
+        print('something wrong ', e, e.args)
+        r.sadd('urls', '\t'.join(line))
 #  得到网页 html, 还能截图
 print('jobs finish ,queue is empty')
 driver.quit()
-

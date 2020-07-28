@@ -1,3 +1,12 @@
+'''
+@Author: li xuefeng
+@Date: 2020-07-28 22:28:02
+@LastEditTime: 2020-07-28 22:58:20
+@LastEditors: lixf
+@Description: 
+@FilePath: \wsl\push_urls.py
+@越码越快乐
+'''
 import threading, queue
 from selenium import webdriver
 from datetime import date
@@ -32,14 +41,14 @@ month_dict = {
 # 将刚刚复制的帖在这
 url_list = []
 url_que = queue.Queue()
-with open('./url.csv') as f:
+with open('./urls.csv') as f:
     for k, line in enumerate(f):
         if k == 0:
             continue
         line = line.strip().split(',')
         url = []
         url.append(line[0])
-        date_string = line[-1]
+        date_string = line[1]
         year = date_string[-4:]
         mon = month_dict[date_string[2:5]]
         day = date_string[:2]
@@ -51,12 +60,20 @@ with open('./url.csv') as f:
             url.append(end_date)
             url_list.append(url)
             url_que.put(url)
+            url_que.put([
+                line[2],
+                start_date,
+                end_date,
+            ])
         except:
             print("wrong date" + date_string)
             continue
 result = []
 import redis
-r=redis.StrictRedis(host='tencent.latiaohaochi.cn',port=6379,password='6063268abc',db=0)
+r = redis.StrictRedis(host='tencent.latiaohaochi.cn',
+                      port=6379,
+                      password='6063268abc',
+                      db=0)
 for url in url_list:
-    r.sadd('urls','\t'.join(url))
+    r.sadd('urls', '\t'.join(url))
     print(r.scard('urls'))
