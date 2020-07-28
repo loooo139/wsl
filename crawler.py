@@ -4,7 +4,7 @@
 
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
-@LastEditTime: 2020-07-28 23:27:05
+@LastEditTime: 2020-07-28 23:35:59
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -24,7 +24,7 @@ options = webdriver.ChromeOptions()
 from selenium.webdriver.chrome.options import Options
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-# options.add_argument('--headless')
+options.add_argument('--headless')
 # 更换头部
 options.add_argument(
     'user-agent="Mozilla/5.0 (iPod; U; CPU iPhone OS 2_1 like Mac OS X; ja-jp) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5F137 Safari/525.20"'
