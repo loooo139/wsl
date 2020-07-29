@@ -4,7 +4,8 @@
 
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
-@LastEditTime: 2020-07-28 23:35:59
+
+@LastEditTime: 2020-07-29 13:16:04
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -20,7 +21,7 @@ import pymysql
 import sys
 options = webdriver.ChromeOptions()
 # 设置中文
-#options.add_argument('--ignore-certificate-errors')
+options.add_argument('--ignore-certificate-errors')
 from selenium.webdriver.chrome.options import Options
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
@@ -34,6 +35,8 @@ driver = webdriver.Chrome(options=options)  # 打开 Chrome 浏览器
 r = redis.StrictRedis(host='tencent.latiaohaochi.cn',
                       port=6379,
                       password='6063268abc',
+                      socket_connect_timeout=300,
+                      retry_on_timeout=5,
                       db=0)
 res = open('./dis_res.csv', 'a', encoding='utf8')
 # driver.implicitly_wait(0.5)
@@ -44,6 +47,7 @@ driver.implicitly_wait(10)
 mysql = pymysql.connect(host='tencent.latiaohaochi.cn',
                         user='root',
                         password='6063268abc',
+                        connect_timeout=20,
                         db='crawler')
 cursor = mysql.cursor()
 sql = 'insert into wsl_news(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url) values("{}","{}","{}","{}","{}","{}","{}","{}","{}")'
@@ -58,6 +62,7 @@ while r.scard('urls') != 0:
     try:
         single_url = "https://www.wsj.com/search/term.html?KEYWORDS={name}&min-date={start_date}&max-date={end_date}&isAdvanced=true&daysback=90d&andor=AND&sort=date-desc&source=wsjarticle".format(
             name=name, start_date=start_date, end_date=end_date)
+        print('current url is ', single_url, '\n', 'loading')
         driver.get(single_url)
         # WebDriverWait(driver, 10).until(
         #     EC.presence_of_element_located(
@@ -65,14 +70,16 @@ while r.scard('urls') != 0:
         # time.sleep(3)
         try:
             news = driver.find_elements_by_css_selector('.headline-container')
+            if len(news) == 0:
+                print('no news parse')
+                continue
             len_res = int(
                 driver.find_elements_by_css_selector(
                     'li[class="results-count"]')[0].text.split()[-1])
-        except Exception as e:
+        except IndexError as e:
             r.sadd('urls', '\t'.join(line))
-            print('find no news on this page,put it back to db', e, e.args,
-                  sys.exc_info())
-            print(single_url)
+            print('find no news on this page,put it back to db')
+            print('current url is ', single_url)
             continue
         for i in range(int(len_res / 20) + 1):
             print("full len  page is {0},cur is {1}".format(
@@ -94,6 +101,8 @@ while r.scard('urls') != 0:
             print("find " + str(len(news)) + " news")
             if len(news) == 0:
                 r.sadd('urls', '\t'.join(line))
+                print('it seems there is no news ,try it later')
+                print('current url is ', single_url)
                 continue
             for k, i in enumerate(news):
                 print(k + 1)
@@ -135,17 +144,26 @@ while r.scard('urls') != 0:
                         print(sys.exc_info())
                         print(news_sql)
                         print('insert to db failed')
+                        mysql = pymysql.connect(host='tencent.latiaohaochi.cn',
+                                                user='root',
+                                                password='6063268abc',
+                                                connect_timeout=20,
+                                                db='crawler')
+                        cursor = mysql.cursor()
+                        mysql.rollback()
                 except Exception as e:
-                    print('exception', e)
+                    print('exception', e, sys.exc_info())
                     single_res = '\t'.join(
                         [name, start_date, end_date, i.text])
                     res.write(single_res + '\n')
-                print('write one news ' + str(++full_res))
+                full_res += 1
+                print('write one news ' + str(full_res))
         print('finish one  pages jobs,left is ', r.scard('urls'))
 
         # res.write(i.text)
     except Exception as e:
-        print('something wrong ', e, e.args)
+        print('something wrong ', e, e.args, sys.exc_info())
+        print('could not load the page,tiemout,try late')
         r.sadd('urls', '\t'.join(line))
 #  得到网页 html, 还能截图
 print('jobs finish ,queue is empty')
