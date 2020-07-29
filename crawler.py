@@ -5,7 +5,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 18:32:45
+@LastEditTime: 2020-07-29 18:33:19
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -26,7 +26,7 @@ def ping(url='tencent.latiaohaochi.cn'):
     print('ping ' + url)
     print('current os is ' + platform.platform())
     if 'Linux' in platform.platform():
-        result.os.system(u'pinf' + url + '-c 5')
+        result = os.system(u'ping' + url + '-c 5')
     else:
         result = os.system(u"ping " + url + '-n 5')
     #result = os.system(u"ping www.baidu.com -n 3")
