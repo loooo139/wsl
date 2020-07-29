@@ -5,7 +5,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 18:24:25
+@LastEditTime: 2020-07-29 18:32:45
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -18,13 +18,17 @@ from datetime import timedelta
 import time
 import redis
 import pymysql
-import sys, os
+import sys, os, platform
 
 
 def ping(url='tencent.latiaohaochi.cn'):
     ''' ping 主备网络 '''
     print('ping ' + url)
-    result = os.system(u"ping " + url + '-n 5')
+    print('current os is ' + platform.platform())
+    if 'Linux' in platform.platform():
+        result.os.system(u'pinf' + url + '-c 5')
+    else:
+        result = os.system(u"ping " + url + '-n 5')
     #result = os.system(u"ping www.baidu.com -n 3")
     if result == 0:
         print("可以正常访问服务器")
