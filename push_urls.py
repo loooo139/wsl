@@ -1,7 +1,7 @@
 '''
 @Author: li xuefeng
 @Date: 2020-07-28 22:28:02
-@LastEditTime: 2020-07-28 22:58:20
+@LastEditTime: 2020-07-29 13:26:55
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\push_urls.py
@@ -74,6 +74,6 @@ r = redis.StrictRedis(host='tencent.latiaohaochi.cn',
                       port=6379,
                       password='6063268abc',
                       db=0)
-for url in url_list:
+for i, url in enumerate(url_list):
     r.sadd('urls', '\t'.join(url))
-    print(r.scard('urls'))
+    print(i,r.scard('urls'))

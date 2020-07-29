@@ -5,7 +5,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 13:16:04
+@LastEditTime: 2020-07-29 18:03:29
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -39,7 +39,7 @@ r = redis.StrictRedis(host='tencent.latiaohaochi.cn',
                       retry_on_timeout=5,
                       db=0)
 res = open('./dis_res.csv', 'a', encoding='utf8')
-# driver.implicitly_wait(0.5)
+driver.implicitly_wait(5)
 #len_res=0
 full_res = 0
 driver.implicitly_wait(10)
@@ -124,10 +124,9 @@ while r.scard('urls') != 0:
                         'div[class="summary-container"]')[0].text
                     news_url = i.find_elements_by_css_selector(
                         'h3 > a')[0].get_attribute('href')
-                    single_res = '\t'.join([
-                        name, start_date, end_date, tag, title, author, date,
-                        absrtact, news_url
-                    ])
+                    single_res = '\t'.join(
+                        (name, start_date, end_date, tag, title, author, date,
+                         absrtact, news_url)).encode('utf-8').strip()
                     res.write(single_res + '\n')
                     print(single_res)
                     if r.sadd('news', single_res) == 0:
@@ -154,7 +153,7 @@ while r.scard('urls') != 0:
                 except Exception as e:
                     print('exception', e, sys.exc_info())
                     single_res = '\t'.join(
-                        [name, start_date, end_date, i.text])
+                        [name, start_date, end_date, i.text]).encode('utf-8')
                     res.write(single_res + '\n')
                 full_res += 1
                 print('write one news ' + str(full_res))
