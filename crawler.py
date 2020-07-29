@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-30 00:53:18
+@LastEditTime: 2020-07-30 00:53:37
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -64,7 +64,7 @@ r = redis.StrictRedis(host=redis_url,
                       retry_on_timeout=5,
                       db=0)
 res = open('./dis_res.csv', 'a', encoding='utf8')
-driver.implicitly_wait(5)
+
 #len_res=0
 full_res = 0
 driver.implicitly_wait(10)
