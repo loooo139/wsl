@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 18:38:19
+@LastEditTime: 2020-07-29 18:46:29
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -26,14 +26,15 @@ def ping(url='tencent.latiaohaochi.cn'):
     print('ping ' + url)
     print('current os is ' + platform.platform())
     if 'Linux' in platform.platform():
-        result = os.system(u'ping ' + url + '-c 5')
+        result = os.system(u'ping ' + url + ' -c 5')
     else:
-        result = os.system(u"ping " + url + '-n 5')
+        result = os.system(u"ping " + url + ' -n 5')
     #result = os.system(u"ping www.baidu.com -n 3")
     if result == 0:
         print("the network is good")
     else:
         print("can not connect the wsj,will use the proxy")
+    return result
 
 
 options = webdriver.ChromeOptions()
@@ -51,8 +52,8 @@ if ping() == 0:
     redis_url = 'tencent.latiaohaochi.cn'
     mysql_url = 'tencent.latiaohaochi.cn'
 else:
-    redis_url = 'www.latiaohaochi.cn'
-    mysql_url = 'www.latiaohaochi.cn'
+    redis_url = 'latiaohaochi.cn'
+    mysql_url = 'latiaohaochi.cn'
 if ping('www.google.com') != 0:
     print('using proxy browse the wjs')
     options.add_argument("--proxy-server=socks5://n1.latiaohaochi.top:10808")
