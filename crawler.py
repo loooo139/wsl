@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding:utf-8 -*-
+# -*- coding: utf-8 -*-
 '''
 
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 18:33:19
+@LastEditTime: 2020-07-29 18:37:24
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -22,7 +23,6 @@ import sys, os, platform
 
 
 def ping(url='tencent.latiaohaochi.cn'):
-    ''' ping 主备网络 '''
     print('ping ' + url)
     print('current os is ' + platform.platform())
     if 'Linux' in platform.platform():
@@ -31,9 +31,9 @@ def ping(url='tencent.latiaohaochi.cn'):
         result = os.system(u"ping " + url + '-n 5')
     #result = os.system(u"ping www.baidu.com -n 3")
     if result == 0:
-        print("可以正常访问服务器")
+        print("the network is good")
     else:
-        print("无法直接访问，将使用代理连接")
+        print("can not connect the wsj,will use the proxy")
 
 
 options = webdriver.ChromeOptions()
