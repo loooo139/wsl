@@ -5,7 +5,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 18:03:29
+@LastEditTime: 2020-07-29 18:21:25
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -19,6 +19,18 @@ import time
 import redis
 import pymysql
 import sys
+
+
+def ping(url='tencent.latiaohaochi.cn'):
+    ''' ping 主备网络 '''
+    result = os.system(u"ping " + url)
+    #result = os.system(u"ping www.baidu.com -n 3")
+    if result == 0:
+        print("可以正常访问服务器")
+    else:
+        print("无法直接访问，将使用代理连接")
+
+
 options = webdriver.ChromeOptions()
 # 设置中文
 options.add_argument('--ignore-certificate-errors')
@@ -30,9 +42,17 @@ options.add_argument('--headless')
 options.add_argument(
     'user-agent="Mozilla/5.0 (iPod; U; CPU iPhone OS 2_1 like Mac OS X; ja-jp) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5F137 Safari/525.20"'
 )
-#options.add_argument("--proxy-server=socks5://127.0.0.1:10808")
+if ping() == 0:
+    redis_url = 'tencent.latiaohaochi.cn'
+    mysql_url = 'tencent.latiaohaochi.cn'
+else:
+    redis_url = 'www.latiaohaochi.cn'
+    mysql_url = 'www.latiaohaochi.cn'
+if ping('www.google.com') != 0:
+    print('using proxy browse the wjs')
+    options.add_argument("--proxy-server=socks5://n1.latiaohaochi.top:10808")
 driver = webdriver.Chrome(options=options)  # 打开 Chrome 浏览器
-r = redis.StrictRedis(host='tencent.latiaohaochi.cn',
+r = redis.StrictRedis(host=redis_url,
                       port=6379,
                       password='6063268abc',
                       socket_connect_timeout=300,
@@ -44,7 +64,7 @@ driver.implicitly_wait(5)
 full_res = 0
 driver.implicitly_wait(10)
 # driver.set_page_load_timeout(10)
-mysql = pymysql.connect(host='tencent.latiaohaochi.cn',
+mysql = pymysql.connect(host=mysql_url,
                         user='root',
                         password='6063268abc',
                         connect_timeout=20,
