@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 18:46:29
+@LastEditTime: 2020-07-29 21:08:52
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -26,9 +26,9 @@ def ping(url='tencent.latiaohaochi.cn'):
     print('ping ' + url)
     print('current os is ' + platform.platform())
     if 'Linux' in platform.platform():
-        result = os.system(u'ping ' + url + ' -c 5')
+        result = os.system(u'ping ' + url + ' -c 3')
     else:
-        result = os.system(u"ping " + url + ' -n 5')
+        result = os.system(u"ping " + url + ' -n 3')
     #result = os.system(u"ping www.baidu.com -n 3")
     if result == 0:
         print("the network is good")
@@ -43,7 +43,7 @@ options.add_argument('--ignore-certificate-errors')
 from selenium.webdriver.chrome.options import Options
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--headless')
+# options.add_argument('--headless')
 # 更换头部
 options.add_argument(
     'user-agent="Mozilla/5.0 (iPod; U; CPU iPhone OS 2_1 like Mac OS X; ja-jp) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5F137 Safari/525.20"'
@@ -54,9 +54,9 @@ if ping() == 0:
 else:
     redis_url = 'latiaohaochi.cn'
     mysql_url = 'latiaohaochi.cn'
-if ping('www.google.com') != 0:
-    print('using proxy browse the wjs')
-    options.add_argument("--proxy-server=socks5://n1.latiaohaochi.top:10808")
+# if ping('www.google.com') != 0:
+#     print('using proxy browse the wjs')
+#     # options.add_argument("--proxy-server=socks5://n1.latiaohaochi.top:10808")
 driver = webdriver.Chrome(options=options)  # 打开 Chrome 浏览器
 r = redis.StrictRedis(host=redis_url,
                       port=6379,
@@ -77,7 +77,7 @@ mysql = pymysql.connect(host=mysql_url,
                         db='crawler')
 cursor = mysql.cursor()
 sql = 'insert into wsl_news(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url) values("{}","{}","{}","{}","{}","{}","{}","{}","{}")'
-
+fail_data = open('./other.csv', 'a', encoding='utf8')
 while r.scard('urls') != 0:
     #    time.sleep(5)
     print('remain task')
@@ -98,6 +98,7 @@ while r.scard('urls') != 0:
             news = driver.find_elements_by_css_selector('.headline-container')
             if len(news) == 0:
                 print('no news parse')
+                r.sadd('urls', '\t'.join(line))
                 continue
             len_res = int(
                 driver.find_elements_by_css_selector(
@@ -106,6 +107,7 @@ while r.scard('urls') != 0:
             r.sadd('urls', '\t'.join(line))
             print('find no news on this page,put it back to db')
             print('current url is ', single_url)
+            r.sadd('urls', '\t'.join(line))
             continue
         for i in range(int(len_res / 20) + 1):
             print("full len  page is {0},cur is {1}".format(
@@ -152,7 +154,7 @@ while r.scard('urls') != 0:
                         'h3 > a')[0].get_attribute('href')
                     single_res = '\t'.join(
                         (name, start_date, end_date, tag, title, author, date,
-                         absrtact, news_url)).encode('utf-8').strip()
+                         absrtact, news_url))
                     res.write(single_res + '\n')
                     print(single_res)
                     if r.sadd('news', single_res) == 0:
@@ -165,6 +167,8 @@ while r.scard('urls') != 0:
                         cursor.execute(news_sql)
                         mysql.commit()
                         print('insert to db success')
+                        full_res += 1
+                        print('write one news ' + str(full_res))
                     except:
                         print(sys.exc_info())
                         print(news_sql)
@@ -179,10 +183,9 @@ while r.scard('urls') != 0:
                 except Exception as e:
                     print('exception', e, sys.exc_info())
                     single_res = '\t'.join(
-                        [name, start_date, end_date, i.text]).encode('utf-8')
-                    res.write(single_res + '\n')
-                full_res += 1
-                print('write one news ' + str(full_res))
+                        [name, start_date, end_date, i.text])
+                    fail_data.write(single_res + '\n')
+
         print('finish one  pages jobs,left is ', r.scard('urls'))
 
         # res.write(i.text)
