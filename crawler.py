@@ -5,7 +5,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-29 18:23:12
+@LastEditTime: 2020-07-29 18:24:25
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -24,7 +24,7 @@ import sys, os
 def ping(url='tencent.latiaohaochi.cn'):
     ''' ping 主备网络 '''
     print('ping ' + url)
-    result = os.system(u"ping " + url)
+    result = os.system(u"ping " + url + '-n 5')
     #result = os.system(u"ping www.baidu.com -n 3")
     if result == 0:
         print("可以正常访问服务器")
