@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-30 00:49:57
+@LastEditTime: 2020-07-30 00:53:18
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -210,5 +210,5 @@ except Exception as e:
                             password='6063268abc',
                             connect_timeout=20,
                             db='crawler')
-cursor = mysql.cursor()
+    cursor = mysql.cursor()
 driver.quit()
