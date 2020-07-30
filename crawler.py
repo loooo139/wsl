@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-30 13:14:55
+@LastEditTime: 2020-07-30 17:12:43
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -64,7 +64,7 @@ r = redis.StrictRedis(host=redis_url,
                       password='6063268abc',
                       retry_on_timeout=5,
                       db=0)
-res = open('./dis_res.csv', 'a', encoding='utf8')
+res = open('./dis_res.csv', 'a', encoding='utf8', buffering=1)
 
 #len_res=0
 full_res = 0
@@ -204,6 +204,11 @@ while True:
                 print(datetime.now())
                 print('something wrong ', e, e.args, sys.exc_info())
                 print('could not load the page,tiemout,try late')
+                r = redis.StrictRedis(host=redis_url,
+                                      port=6379,
+                                      password='6063268abc',
+                                      retry_on_timeout=5,
+                                      db=0)
                 r.sadd('urls', '\t'.join(line))
         #  得到网页 html, 还能截图
         print('jobs finish ,queue is empty')
