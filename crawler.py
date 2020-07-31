@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-30 17:12:43
+@LastEditTime: 2020-07-31 11:01:36
 @LastEditors: lixf
 @Description: 
 @FilePath: \wsl\crawler.py
@@ -118,7 +118,7 @@ while True:
                     print("full len  page is {0},cur is {1}".format(
                         int(len_res / 20) + 1, i + 1))
                     if i != 0:
-                        continue
+                        # continue
                         # 有问题，待修复
                         time.sleep(2)
                         driver.find_elements_by_xpath(
