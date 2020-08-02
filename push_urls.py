@@ -1,7 +1,7 @@
 '''
 @Author: li xuefeng
 @Date: 2020-07-28 22:28:02
-LastEditTime: 2020-08-02 23:53:10
+LastEditTime: 2020-08-03 00:03:34
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\push_urls.py
@@ -70,7 +70,7 @@ for i, url in enumerate(url_list):
     # if len(url[0]) == 0:
     #     print('null key_word ')
     #     time_null += 1
-        print(time_null)
-        continue
+    # print(time_null)
+    # continue
     r.sadd('urls', '\t'.join(url))
     print(i, r.scard('urls'))
