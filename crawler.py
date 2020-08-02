@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-LastEditTime: 2020-08-02 23:55:31
+LastEditTime: 2020-08-03 00:09:59
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\crawler.py
@@ -127,7 +127,7 @@ while True:
                         driver.find_elements_by_css_selector(
                             'li[class="results-count"]')[0].text.split()[-1])
                 except IndexError as e:
-                    r.sadd('urls', '\t'.join(line))
+                    # r.sadd('urls', '\t'.join(line))
                     print('find no news on this page,put it back to db')
                     print('current url is ', single_url)
                     r.sadd('urls', '\t'.join(line))
