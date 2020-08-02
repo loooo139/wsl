@@ -6,10 +6,10 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-@LastEditTime: 2020-07-31 11:01:36
-@LastEditors: lixf
+LastEditTime: 2020-08-02 23:29:05
+LastEditors: lixf
 @Description: 
-@FilePath: \wsl\crawler.py
+FilePath: \wsl\crawler.py
 @越码越快乐
 '''
 from datetime import datetime
@@ -21,6 +21,22 @@ import time
 import redis
 import pymysql
 import sys, os, platform
+from datetime import datetime, tzinfo, timedelta
+
+
+class UTC(tzinfo):
+    """UTC"""
+    def __init__(self, offset=0):
+        self._offset = offset
+
+    def utcoffset(self, dt):
+        return timedelta(hours=self._offset)
+
+    def tzname(self, dt):
+        return "UTC +%s" % self._offset
+
+    def dst(self, dt):
+        return timedelta(hours=self._offset)
 
 
 def ping(url='tencent.latiaohaochi.cn'):
@@ -40,11 +56,13 @@ def ping(url='tencent.latiaohaochi.cn'):
 
 options = webdriver.ChromeOptions()
 # 设置中文
+# mobileEmulation = {'deviceName': 'Galaxy S5'}
 options.add_argument('--ignore-certificate-errors')
-from selenium.webdriver.chrome.options import Options
+# from selenium.webdriver.chrome.options import Options
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
-options.add_argument('--headless')
+# options.add_experimental_option('mobileEmulation', mobileEmulation)
+# options.add_argument('--headless')
 # 更换头部
 options.add_argument(
     'user-agent="Mozilla/5.0 (iPod; U; CPU iPhone OS 2_1 like Mac OS X; ja-jp) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5F137 Safari/525.20"'
@@ -82,7 +100,7 @@ while True:
     try:
         while r.scard('urls') != 0:
             #    time.sleep(5)
-            print(datetime.now())
+            print(datetime.now(UTC(8)))
             print('remain task')
             print(r.scard('urls'))
             line = r.spop('urls').decode('utf8').split('\t')
@@ -93,7 +111,7 @@ while True:
                     name=name, start_date=start_date, end_date=end_date)
                 print('current url is ', single_url, '\n', 'loading')
                 driver.get(single_url)
-                print(datetime.now())
+                print(datetime.now(UTC(8)))
                 # WebDriverWait(driver, 10).until(
                 #     EC.presence_of_element_located(
                 #         (By.XPATH, "//div[@class='headline-container']")))
@@ -120,19 +138,21 @@ while True:
                     if i != 0:
                         # continue
                         # 有问题，待修复
-                        time.sleep(2)
+                        # time.sleep(2)
                         driver.find_elements_by_xpath(
                             '//li[@class="next-page"]')[0].click()
-                        time.sleep(3)
+                        # time.sleep(3)
                         cur_res = int(
-                            driver.find_elements_by_xpath(
-                                '//li[@class="results-count"]').text.split()
+                            driver.find_elements_by_css_selector(
+                                'li[class="results-count"]')[0].text.split()
                             [-1])
                         print('click next page finish,cur_lenth is %d',
                               cur_res)
                         if cur_res != len_res:
                             r.radd('urls', '\t'.join(line))
                             continue
+                        news = driver.find_elements_by_css_selector(
+                            '.headline-container')
                     print("find " + str(len(news)) + " news")
                     if len(news) == 0:
                         r.sadd('urls', '\t'.join(line))
@@ -141,7 +161,7 @@ while True:
                         continue
                     for k, i in enumerate(news):
                         print(k + 1)
-                        print(datetime.now())
+                        print(datetime.now(UTC(8)))
                         # print(i.text)
                         new_res = i.text.split('\n')
                         try:
@@ -201,7 +221,7 @@ while True:
 
                 # res.write(i.text)
             except Exception as e:
-                print(datetime.now())
+                print(datetime.now(UTC(8)))
                 print('something wrong ', e, e.args, sys.exc_info())
                 print('could not load the page,tiemout,try late')
                 r = redis.StrictRedis(host=redis_url,
