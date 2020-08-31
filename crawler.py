@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-LastEditTime: 2020-08-03 00:09:59
+LastEditTime: 2020-08-31 23:35:43
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\crawler.py
@@ -62,7 +62,7 @@ options.add_argument('--ignore-certificate-errors')
 options.add_argument('--no-sandbox')
 options.add_argument('--disable-dev-shm-usage')
 # options.add_experimental_option('mobileEmulation', mobileEmulation)
-options.add_argument('--headless')
+# options.add_argument('--headless')
 # 更换头部
 options.add_argument(
     'user-agent="Mozilla/5.0 (iPod; U; CPU iPhone OS 2_1 like Mac OS X; ja-jp) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5F137 Safari/525.20"'
@@ -94,21 +94,29 @@ mysql = pymysql.connect(host=mysql_url,
                         connect_timeout=200,
                         db='crawler')
 cursor = mysql.cursor()
-sql = 'insert into wsl_news(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url) values("{}","{}","{}","{}","{}","{}","{}","{}","{}")'
+sql = 'insert into wsl_news_v2(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url,news_index) values("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}")'
 fail_data = open('./other.csv', 'a', encoding='utf8')
 while True:
     try:
-        while r.scard('urls') != 0:
+        while r.scard('author_urls') != 0:
             #    time.sleep(5)
             print(datetime.now(UTC(8)))
             print('remain task')
-            print(r.scard('urls'))
-            line = r.spop('urls').decode('utf8').split('\t')
+            print(r.scard('author_urls'))
+            line = r.spop('author_urls').decode('utf8').split('\t')
             #    r.lpop('urls')
-            name, start_date, end_date = line[0], line[1], line[2]
+            # name, start_date, end_date = line[0], line[1], line[2]
+            origin_index, name, start_date, author_ori = line[0], line[
+                1], line[2], line[-1]
+            end_date = start_date.split()[0]
+            start_date = str(int(end_date.split('/')[0]) - 1)
+            start_date += end_date[4:]
             try:
-                single_url = "https://www.wsj.com/search/term.html?KEYWORDS={name}&min-date={start_date}&max-date={end_date}&isAdvanced=true&daysback=90d&andor=AND&sort=date-desc&source=wsjarticle".format(
-                    name=name, start_date=start_date, end_date=end_date)
+                single_url = "https://www.wsj.com/search/term.html?KEYWORDS={name}&min-date={start_date}&max-date={end_date}&byline={author}&isAdvanced=true&daysback=1y&andor=AND&sort=date-desc&source=wsjarticle".format(
+                    name=name.replace('&', '%26'),
+                    start_date=start_date,
+                    end_date=end_date,
+                    author=author_ori)
                 print('current url is ', single_url, '\n', 'loading')
                 driver.get(single_url)
                 print(datetime.now(UTC(8)))
@@ -181,9 +189,10 @@ while True:
                                 'div[class="summary-container"]')[0].text
                             news_url = i.find_elements_by_css_selector(
                                 'h3 > a')[0].get_attribute('href')
+                            news_index = origin_index + '-' + author_ori
                             single_res = '\t'.join(
                                 (name, start_date, end_date, tag, title,
-                                 author, date, absrtact, news_url))
+                                 author, date, absrtact, news_url, news_index))
                             res.write(single_res + '\n')
                             print(single_res)
                             if r.sadd('news', single_res) == 0:
@@ -193,7 +202,7 @@ while True:
                                 news_sql = sql.format(name, start_date,
                                                       end_date, tag, title,
                                                       author, date, absrtact,
-                                                      news_url)
+                                                      news_url, news_index)
                                 cursor.execute(news_sql)
                                 mysql.commit()
                                 print('insert to db success')
