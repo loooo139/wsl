@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-LastEditTime: 2020-09-01 22:00:03
+LastEditTime: 2020-09-01 22:11:52
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\crawler.py
@@ -94,7 +94,7 @@ mysql = pymysql.connect(host=mysql_url,
                         connect_timeout=200,
                         db='crawler')
 cursor = mysql.cursor()
-sql = 'insert into wsl_news_v2(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url,news_index) values("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}")'
+sql = 'insert into wsl_news_v3(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url,news_index) values("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}")'
 fail_data = open('./other.csv', 'a', encoding='utf8')
 while True:
     try:
