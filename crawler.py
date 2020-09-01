@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-LastEditTime: 2020-08-31 23:48:51
+LastEditTime: 2020-09-01 22:00:03
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\crawler.py
@@ -129,7 +129,7 @@ while True:
                         '.headline-container')
                     if len(news) == 0:
                         print('no news parse')
-                        r.sadd('urls', '\t'.join(line))
+                        r.sadd('author_urls', '\t'.join(line))
                         continue
                     len_res = int(
                         driver.find_elements_by_css_selector(
@@ -138,7 +138,7 @@ while True:
                     # r.sadd('urls', '\t'.join(line))
                     print('find no news on this page,put it back to db')
                     print('current url is ', single_url)
-                    r.sadd('urls', '\t'.join(line))
+                    r.sadd('author_urls', '\t'.join(line))
                     continue
                 for i in range(int(len_res / 20) + 1):
                     print("full len  page is {0},cur is {1}".format(
@@ -157,13 +157,13 @@ while True:
                         print('click next page finish,cur_lenth is %d',
                               cur_res)
                         if cur_res != len_res:
-                            r.radd('urls', '\t'.join(line))
+                            r.radd('author_urls', '\t'.join(line))
                             continue
                         news = driver.find_elements_by_css_selector(
                             '.headline-container')
                     print("find " + str(len(news)) + " news")
                     if len(news) == 0:
-                        r.sadd('urls', '\t'.join(line))
+                        r.sadd('author_urls', '\t'.join(line))
                         print('it seems there is no news ,try it later')
                         print('current url is ', single_url)
                         continue
@@ -195,7 +195,7 @@ while True:
                                  author, date, absrtact, news_url, news_index))
                             res.write(single_res + '\n')
                             print(single_res)
-                            if r.sadd('news', single_res) == 0:
+                            if r.sadd('news_author', single_res) == 0:
                                 print('duplicate news')
                                 continue
                             try:
@@ -238,7 +238,7 @@ while True:
                                       password='6063268abc',
                                       retry_on_timeout=5,
                                       db=0)
-                r.sadd('urls', '\t'.join(line))
+                r.sadd('author_urls', '\t'.join(line))
         #  得到网页 html, 还能截图
         print('jobs finish ,queue is empty')
         break
