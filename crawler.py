@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-LastEditTime: 2020-09-07 21:17:08
+LastEditTime: 2020-09-17 18:11:39
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\crawler.py
@@ -94,16 +94,16 @@ mysql = pymysql.connect(host=mysql_url,
                         connect_timeout=200,
                         db='crawler')
 cursor = mysql.cursor()
-sql = 'insert into wsl_news_v4(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url,news_index) values("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}")'
+sql = 'insert into wsl_news_v5(key_word,start_date,end_date,news_tag,news_title,news_author,news_time,news_summary,news_url,news_index) values("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}")'
 fail_data = open('./other.csv', 'a', encoding='utf8')
 while True:
     try:
-        while r.scard('author_urls') != 0:
+        while r.scard('author_urls_v5') != 0:
             #    time.sleep(5)
             print(datetime.now(UTC(8)))
             print('remain task')
-            print(r.scard('author_urls'))
-            line = r.spop('author_urls').decode('utf8').split('\t')
+            print(r.scard('author_urls_v5'))
+            line = r.spop('author_urls_v5').decode('utf8').split('\t')
             #    r.lpop('urls')
             # name, start_date, end_date = line[0], line[1], line[2]
             origin_index, name, start_date, author_ori = line[0], line[
@@ -129,7 +129,7 @@ while True:
                         '.headline-container')
                     if len(news) == 0:
                         print('no news parse')
-                        r.sadd('author_urls', '\t'.join(line))
+                        r.sadd('author_urls_v5', '\t'.join(line))
                         continue
                     len_res = int(
                         driver.find_elements_by_css_selector(
@@ -138,7 +138,7 @@ while True:
                     # r.sadd('urls', '\t'.join(line))
                     print('find no news on this page,put it back to db')
                     print('current url is ', single_url)
-                    r.sadd('author_urls', '\t'.join(line))
+                    r.sadd('author_urls_v5', '\t'.join(line))
                     continue
                 for i in range(int(len_res / 20) + 1):
                     print("full len  page is {0},cur is {1}".format(
@@ -157,13 +157,13 @@ while True:
                         print('click next page finish,cur_lenth is %d',
                               cur_res)
                         if cur_res != len_res:
-                            r.radd('author_urls', '\t'.join(line))
+                            r.radd('author_urls_v5', '\t'.join(line))
                             continue
                         news = driver.find_elements_by_css_selector(
                             '.headline-container')
                     print("find " + str(len(news)) + " news")
                     if len(news) == 0:
-                        r.sadd('author_urls', '\t'.join(line))
+                        r.sadd('author_urls_v5', '\t'.join(line))
                         print('it seems there is no news ,try it later')
                         print('current url is ', single_url)
                         continue
@@ -195,7 +195,7 @@ while True:
                                  author, date, absrtact, news_url, news_index))
                             res.write(single_res + '\n')
                             print(single_res)
-                            if r.sadd('news_v4', single_res) == 0:
+                            if r.sadd('news_v5', single_res) == 0:
                                 print('duplicate news')
                                 continue
                             try:
@@ -238,7 +238,7 @@ while True:
                                       password='6063268abc',
                                       retry_on_timeout=5,
                                       db=0)
-                r.sadd('author_urls', '\t'.join(line))
+                r.sadd('author_urls_v5', '\t'.join(line))
         #  得到网页 html, 还能截图
         print('jobs finish ,queue is empty')
         break

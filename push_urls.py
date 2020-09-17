@@ -1,7 +1,7 @@
 '''
 @Author: li xuefeng
 @Date: 2020-07-28 22:28:02
-LastEditTime: 2020-08-31 22:03:11
+LastEditTime: 2020-09-17 18:03:30
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\push_urls.py
@@ -29,7 +29,7 @@ month_dict = {
 }
 # 将刚刚复制的帖在这
 url_list = []
-with open('./new_reporter.txt') as f:
+with open('./additional_searches.txt') as f:
     for k, line in enumerate(f):
         if k == 0:
             continue
@@ -82,5 +82,10 @@ for i, url in enumerate(url_list):
     #     time_null += 1
     #     print(time_null)
     #     continue
-    r.sadd('author_urls', url)
-    print(i, r.scard('author_urls'))
+    r.sadd('author_urls_v5', url)
+    print(i, r.scard('author_urls_v5'))
+with open('./v5_all_urls', 'w') as v4:
+    for i in url_list:
+        v4.write(i)
+        v4.write('\n')
+    v4.close()
