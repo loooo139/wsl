@@ -6,7 +6,7 @@
 @Author: li xuefeng
 @Date: 2020-07-25 01:06:38
 
-LastEditTime: 2020-09-17 18:11:39
+LastEditTime: 2020-10-15 17:56:55
 LastEditors: lixf
 @Description: 
 FilePath: \wsl\crawler.py
@@ -117,6 +117,12 @@ while True:
                     start_date=start_date,
                     end_date=end_date,
                     author=author_ori)
+                # single_url = 'https://www.wsj.com/search/term.html?KEYWORDS=3M&min-date=2015/04/26&max-date=2016/04/26&isAdvanced=true&daysback=90d&byline=Bob%20Tita&andor=AND&sort=date-desc&source=wsjarticle'
+                # name = 'Activision'
+                # start_date = '2013/01/01'
+                # end_date = '2013/12/31'
+                # author_ori = 'Ian Sherr'
+                # origin_index = '135984'
                 print('current url is ', single_url, '\n', 'loading')
                 driver.get(single_url)
                 print(datetime.now(UTC(8)))
@@ -185,14 +191,15 @@ while True:
                                 'h3[class="headline"]')[0].text
                             date = i.find_elements_by_css_selector(
                                 'time')[0].text
-                            absrtact = i.find_elements_by_css_selector(
+                            abstract = i.find_elements_by_css_selector(
                                 'div[class="summary-container"]')[0].text
+                            abstract = abstract.replace('"', '')
                             news_url = i.find_elements_by_css_selector(
                                 'h3 > a')[0].get_attribute('href')
                             news_index = origin_index + '-' + author_ori
                             single_res = '\t'.join(
                                 (name, start_date, end_date, tag, title,
-                                 author, date, absrtact, news_url, news_index))
+                                 author, date, abstract, news_url, news_index))
                             res.write(single_res + '\n')
                             print(single_res)
                             if r.sadd('news_v5', single_res) == 0:
@@ -201,7 +208,7 @@ while True:
                             try:
                                 news_sql = sql.format(name, start_date,
                                                       end_date, tag, title,
-                                                      author, date, absrtact,
+                                                      author, date, abstract,
                                                       news_url, news_index)
                                 cursor.execute(news_sql)
                                 mysql.commit()
